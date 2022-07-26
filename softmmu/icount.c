@@ -88,8 +88,13 @@ static void icount_update_locked(CPUState *cpu)
     int64_t executed = icount_get_executed(cpu);
     cpu->icount_budget -= executed;
 
+    int64_t old = timers_state.qemu_icount;
     qatomic_set_i64(&timers_state.qemu_icount,
                     timers_state.qemu_icount + executed);
+    int64_t new = timers_state.qemu_icount;
+    if ((new ^ old) & 0xffffffffff000000) {
+      fprintf(stderr, "icount %lld\n", (long long)new);
+    }
 }
 
 /*
