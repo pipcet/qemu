@@ -18,6 +18,7 @@
 #include "hw/display/bochs-vbe.h" /* for limits */
 #include "ui/console.h"
 #include "sysemu/reset.h"
+#include "standard-headers/drm/drm_fourcc.h"
 
 struct QEMU_PACKED RAMFBCfg {
     uint64_t addr;
@@ -75,18 +76,17 @@ static DisplaySurface *ramfb_create_display_surface(int width, int height,
     return surface;
 }
 
-static void ramfb_fw_cfg_write(void *dev, off_t offset, size_t len)
+static void ramfb_do_setup(RAMFBState *s)
 {
-    RAMFBState *s = dev;
     DisplaySurface *surface;
     uint32_t fourcc, format, width, height;
     hwaddr stride, addr;
 
-    width  = be32_to_cpu(s->cfg.width);
-    height = be32_to_cpu(s->cfg.height);
-    stride = be32_to_cpu(s->cfg.stride);
-    fourcc = be32_to_cpu(s->cfg.fourcc);
-    addr   = be64_to_cpu(s->cfg.addr);
+    width  = 2048;
+    height = 2048;
+    stride = 8192;
+    fourcc = DRM_FORMAT_ARGB8888;
+    addr   = 0xa00000000;
     format = qemu_drm_format_to_pixman(fourcc);
 
     surface = ramfb_create_display_surface(width, height,
@@ -117,19 +117,10 @@ void ramfb_display_update(QemuConsole *con, RAMFBState *s)
 
 RAMFBState *ramfb_setup(Error **errp)
 {
-    FWCfgState *fw_cfg = fw_cfg_find();
     RAMFBState *s;
-
-    if (!fw_cfg || !fw_cfg->dma_enabled) {
-        error_setg(errp, "ramfb device requires fw_cfg with DMA");
-        return NULL;
-    }
 
     s = g_new0(RAMFBState, 1);
 
-    rom_add_vga("vgabios-ramfb.bin");
-    fw_cfg_add_file_callback(fw_cfg, "etc/ramfb",
-                             NULL, ramfb_fw_cfg_write, s,
-                             &s->cfg, sizeof(s->cfg), false);
+    ramfb_do_setup(s);
     return s;
 }
