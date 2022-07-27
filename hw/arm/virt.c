@@ -799,8 +799,7 @@ static void create_gic(VirtMachineState *vms, MemoryRegion *mem)
 
         for (irq = 0; irq < ARRAY_SIZE(timer_irq); irq++) {
             qdev_connect_gpio_out(cpudev, irq,
-                                  qdev_get_gpio_in(vms->gic,
-                                                   ppibase + timer_irq[irq]));
+				  qdev_get_gpio_in(cpudev, ARM_CPU_FIQ));
         }
 
         if (vms->gic_version != VIRT_GIC_VERSION_2) {
