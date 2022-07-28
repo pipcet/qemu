@@ -1654,9 +1654,11 @@ void virt_machine_done(Notifier *notifier, void *data)
                                        vms->memmap[VIRT_PLATFORM_BUS].size,
                                        vms->irqmap[VIRT_PLATFORM_BUS]);
     }
+#if 0
     if (arm_load_dtb(info->dtb_start, info, info->dtb_limit, as, ms) < 0) {
         exit(1);
     }
+#endif
 
     fw_cfg_add_extra_pci_roots(vms->bus, vms->fw_cfg);
 
