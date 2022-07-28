@@ -82,9 +82,9 @@ static void ramfb_do_setup(RAMFBState *s)
     uint32_t fourcc, format, width, height;
     hwaddr stride, addr;
 
-    width  = 2048;
-    height = 2048;
-    stride = 8192;
+    width  = 1024;
+    height = 1024;
+    stride = 4096;
     fourcc = DRM_FORMAT_ARGB8888;
     addr   = 0xa00000000;
     format = qemu_drm_format_to_pixman(fourcc);
