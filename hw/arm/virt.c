@@ -1654,11 +1654,10 @@ void virt_machine_done(Notifier *notifier, void *data)
                                        vms->memmap[VIRT_PLATFORM_BUS].size,
                                        vms->irqmap[VIRT_PLATFORM_BUS]);
     }
-#if 0
-    if (arm_load_dtb(info->dtb_start, info, info->dtb_limit, as, ms) < 0) {
-        exit(1);
-    }
-#endif
+    if (getenv("QEMU_WITH_DTB"))
+        if (arm_load_dtb(info->dtb_start, info, info->dtb_limit, as, ms) < 0) {
+            exit(1);
+        }
 
     fw_cfg_add_extra_pci_roots(vms->bus, vms->fw_cfg);
 
@@ -2276,7 +2275,7 @@ static void machvirt_init(MachineState *machine)
                                vms->fw_cfg, OBJECT(vms));
     }
 
-    vms->bootinfo.ram_size = machine->ram_size;
+    vms->bootinfo.ram_size = machine->ram_size - (getenv("QEMU_WITH_DTB") ? 4 * MiB : 0 * MiB);
     vms->bootinfo.board_id = -1;
     vms->bootinfo.loader_start = vms->memmap[VIRT_MEM].base;
     vms->bootinfo.get_dtb = machvirt_dtb;
