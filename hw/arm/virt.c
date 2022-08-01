@@ -42,6 +42,7 @@
 #include "hw/vfio/vfio-calxeda-xgmac.h"
 #include "hw/vfio/vfio-amd-xgbe.h"
 #include "hw/display/ramfb.h"
+#include "hw/usb/xhci.h"
 #include "net/net.h"
 #include "sysemu/device_tree.h"
 #include "sysemu/numa.h"
@@ -833,6 +834,26 @@ static void create_gic(VirtMachineState *vms, MemoryRegion *mem)
     } else if (vms->gic_version == VIRT_GIC_VERSION_2) {
         create_v2m(vms);
     }
+}
+
+static void create_xhci(const VirtMachineState *vms,
+                        MemoryRegion *mem, Chardev *chr)
+{
+    char *nodename;
+    hwaddr base = 0x1000000000;
+    hwaddr size = 0x0000010000;
+    int irq = 112;
+    DeviceState *dev = qdev_new(TYPE_XHCI_SYSBUS);
+    SysBusDevice *s = SYS_BUS_DEVICE(dev);
+    MachineState *ms = MACHINE(vms);
+    DeviceState *cpudev = DEVICE(qemu_get_cpu(0));
+
+    qdev_prop_set_uint32(dev, "intrs", 1);
+    qdev_prop_set_uint32(dev, "slots", XHCI_MAXSLOTS);
+    sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
+    memory_region_add_subregion(mem, base,
+                                sysbus_mmio_get_region(s, 0));
+    sysbus_connect_irq(s, 0, qdev_get_gpio_in(cpudev, ARM_CPU_FIQ));
 }
 
 static void create_uart(const VirtMachineState *vms, int uart,
@@ -2220,6 +2241,7 @@ static void machvirt_init(MachineState *machine)
 
     fdt_add_pmu_nodes(vms);
 
+    create_xhci(vms, sysmem, serial_hd(0));
     create_uart(vms, VIRT_UART, sysmem, serial_hd(0));
 
     if (vms->secure) {
