@@ -93,7 +93,8 @@ static void icount_update_locked(CPUState *cpu)
                     timers_state.qemu_icount + executed);
     int64_t new = timers_state.qemu_icount;
     if ((new ^ old) & 0xffffffffff000000) {
-      fprintf(stderr, "icount %lld\n", (long long)new);
+        fprintf(stderr, "icount %lld, virtual uptime %g s\n", (long long)new,
+                new / (double)((1 << 24) * 100));
       vm_stop(RUN_STATE_PAUSED);
     }
 }
