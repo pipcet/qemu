@@ -94,6 +94,7 @@ static void icount_update_locked(CPUState *cpu)
     int64_t new = timers_state.qemu_icount;
     if ((new ^ old) & 0xffffffffff000000) {
       fprintf(stderr, "icount %lld\n", (long long)new);
+      vm_stop(RUN_STATE_PAUSED);
     }
 }
 
