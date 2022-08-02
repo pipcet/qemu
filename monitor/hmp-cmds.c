@@ -1710,6 +1710,7 @@ void hmp_sendkey(Monitor *mon, const QDict *qdict)
         keys = separator + 1;
     }
 
+    vm_start();
     qmp_send_key(head, has_hold_time, hold_time, &err);
     hmp_handle_error(mon, err);
 
